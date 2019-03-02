@@ -20,7 +20,6 @@ import java.util.Map;
 public class Argument {
 
     private String name;
-
     /**
      * The type of data the argument accepts - the type of its respective parameter.
      */

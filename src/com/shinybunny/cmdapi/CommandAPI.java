@@ -50,8 +50,8 @@ public class CommandAPI {
     private static final Map<Class<?>, Class<?>> PRIMITIVES_TO_WRAPPERS = new HashMap<>();
 
     private static void test() {
-        register(new Commands());
-        register(new Commands.CoinsCommand());
+        registerSafe(new Commands());
+        registerSafe(new Commands.CoinsCommand());
         String in;
         Scanner s = new Scanner(System.in);
         while (true) {
@@ -146,23 +146,29 @@ public class CommandAPI {
      *     <li>Annotate the method with <code>@</code>{@link DontRegister}</li>
      * </ol>
      * @param holder The instance of a class to register.
+     * @exception IncompatibleAnnotationException if an annotation of some argument is not compatible with its type. For example, {@link Range @Range} for a non-numerical value.
+     * @exception NoAdapterFoundException for any annotation or argument of a type that has no matching registered adapter.
      */
-    public static void register(Object holder) {
-        try {
-            if (holder.getClass().isAnnotationPresent(Settings.class)) {
-                // this object is annotated with Settings, so it's a tree command!
-                registerTree(holder);
-            } else {
-                List<Command> cmds = createCommands(holder);
-                commands.addAll(cmds);
-                // run all listeners with all new registered commands.
-                cmds.forEach((c) -> {
-                    registerCommandListeners.forEach((l) -> {
-                        l.accept(c);
-                    });
+    public static void register(Object holder) throws IncompatibleAnnotationException, NoAdapterFoundException {
+        if (holder.getClass().isAnnotationPresent(Settings.class)) {
+            // this object is annotated with Settings, so it's a tree command!
+            registerTree(holder);
+        } else {
+            List<Command> cmds = createCommands(holder);
+            commands.addAll(cmds);
+            // run all listeners with all new registered commands.
+            cmds.forEach((c) -> {
+                registerCommandListeners.forEach((l) -> {
+                    l.accept(c);
                 });
-            }
-        } catch (Exception e) {
+            });
+        }
+    }
+
+    public static void registerSafe(Object holder) {
+        try {
+            register(holder);
+        } catch (IncompatibleAnnotationException | NoAdapterFoundException e) {
             e.printStackTrace();
         }
     }
@@ -177,7 +183,7 @@ public class CommandAPI {
      */
     public static void register(Class<?> cls) {
         try {
-            register(cls.newInstance());
+            registerSafe(cls.newInstance());
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }

@@ -31,9 +31,4 @@ public class SubCommandAdapter implements ArgumentAdapter<SubCommand> {
         }
         throw new CommandParseException("Unknown sub command '" + alias + "'");
     }
-
-    @Override
-    public void suggest(Argument arg, CommandContext ctx, Suggestions suggestions) {
-
-    }
 }

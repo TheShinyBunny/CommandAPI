@@ -1,7 +1,6 @@
 package com.shinybunny.cmdapi.arguments;
 
 import com.shinybunny.cmdapi.CommandContext;
-import com.shinybunny.cmdapi.Suggestions;
 import com.shinybunny.cmdapi.exceptions.CommandParseException;
 import com.shinybunny.cmdapi.exceptions.MissingArgumentException;
 import com.shinybunny.cmdapi.utils.InputReader;
@@ -27,8 +26,6 @@ public interface ArgumentAdapter<T> {
      * @throws CommandParseException If the parsing fails for some reason.
      */
     T parse(InputReader reader, Argument arg, CommandContext ctx) throws CommandParseException;
-
-    void suggest(Argument arg, CommandContext ctx, Suggestions suggestions);
 
     /**
      * Whether this adapter allows null values to be returned by {@link #parse(InputReader, Argument, CommandContext)}.

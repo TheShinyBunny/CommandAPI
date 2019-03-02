@@ -18,9 +18,4 @@ public class NumberAdapter implements ArgumentAdapter<Number> {
         }
         return reader.readDouble();
     }
-
-    @Override
-    public void suggest(Argument arg, CommandContext ctx, Suggestions suggestions) {
-
-    }
 }

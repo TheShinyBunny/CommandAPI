@@ -21,8 +21,4 @@ public class SenderAdapter implements ArgumentAdapter<Sender> {
         return ctx.getSender();
     }
 
-    @Override
-    public void suggest(Argument arg, CommandContext ctx, Suggestions suggestions) {
-
-    }
 }

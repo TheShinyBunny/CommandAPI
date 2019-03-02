@@ -17,8 +17,4 @@ public class StringAdapter implements ArgumentAdapter<String> {
         return arg.hasAnnotation(MultiWord.class) ? reader.rest() : reader.readWord();
     }
 
-    @Override
-    public void suggest(Argument arg, CommandContext ctx, Suggestions suggestions) {
-
-    }
 }
