@@ -88,14 +88,76 @@ try {
 
 ### The CommandResult
 The `CommandResult` is an interface of the general result received from the command method, resolved from the object returned from the method.
-The command result is made of a number and sometimes a message.
-If the number is more than 0, it is successful.
+The command result is made out of a success count, a result and a message.
+If the success count is 1, the result should be 1 as well. If the result is greater than 0, the success count is 1.
 
-A result of a command from a method return type could be:
+A method return type could be:
+
 `true/false`, so the Command Result will be 1 or 0.
-`int` so the Command Result will become that number.
-`String` will make the result successful and have that message.
-`CommandResult` will just stay the same.
-`Anything else` will be successful and set to 1.
 
-`integer`, so the Command Result will be 
+`int` so the Command Result will become that number.
+
+`String` will make the result successful and have that message.
+
+`CommandResult` will just stay the same.
+
+`Anything else (including void)` will set success count to 1.
+
+A use example could be:
+```java
+public String multiply(double factor1, double factor2) {
+  return "The product of multiplying " + factor1 + " * " + factor2 + " is " + (factor1 * factor2);
+}
+
+public static void executeCommand(String input) {
+  try {
+    CommandResult result = CommandAPI.parse(Sender.CONSOLE,input).execute();
+    System.out.println(result.getMessage());
+  } catch (Exception e) {
+    System.out.println(e.getMessage());
+  }
+}
+```
+
+## Adapters
+The CommandAPI provides easy to use adapters for custom processing of annotations and argument types.
+
+### ArgumentAdapter
+If you have a special object type you'd like the API to recognize and parse from the input, you can create an ArgumentAdapter for it.
+
+So, let's say you have a User class in your project, and you want to use it as an argument:
+```java
+public void kick(User user, String reason) {
+  user.kick(reason);
+}
+```
+Here we are using a parameter type of `User`. If we don't register an ArgumentAdapter for it before registering the command class, the API will throw a `NoAdapterFoundException`.
+
+So let's create an adapter for User:
+```java
+public class UserAdapter implements ArgumentAdapter<User> {
+  
+  @Override
+  public Class<User> getType() {
+    return User.class;
+  }
+  
+  @Override
+  public User parse(InputReader reader, Argument arg, CommandContext ctx) throws CommandParseException {
+    return User.getUserByName(reader.readWord());
+  }
+}
+```
+
+In this example we get introduced to some new API components.
+
+The `InputReader` is a nice and simple thing to help parse the input easily, and it will be passed through all arguments.
+Imagine the InputReader as a string, and a cursor indicating where the caret is located in that string. Now as that string is the input, it will move the cursor through all arguments until it comes to the end of the input.
+
+The `Argument` is the object indicating the argument in the command. You can get its name, type is it required, is it part of the syntax, etc.
+
+The `CommandContext` contains all information about the command parsing and execution process - The command used, the alias used, the Sender and the original input.
+
+
+`reader.readWord()` reads and returns the string until the first space. The cursor is moved to the end of that string.
+
