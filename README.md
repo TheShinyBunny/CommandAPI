@@ -5,6 +5,7 @@ By using some advanced method parsing technology and some dark magic, this API a
 ## How do the commands look like?
 
 Every command for this API is simply a method, where its name will become the command name, its parameters will become the command arguments, and whatever happens when executing that command is implemented inside the method. Every command syntax consists of the method name, following by the arguments separated by spaces (single arguments with spaces are possible).
+ 
 Here are a few examples:
 
 A command that prints the given number:
@@ -26,7 +27,7 @@ public void dice(Sender sender,
 }
 ```
 Note that `Sender` is not part of the syntax, thus will not be parsed from the input. More on that later on.
-The annotations are a way to add custom validation and behaviour to the registeration process as well as parsing.
+The annotations are a way to add custom validation and behaviour to the registration process as well as parsing.
 So in this case, `@Range` determines the minimum allowed value for the `min` or `max` arguments, and if provided a number smaller then the minimum or greater than the maximum, an InvalidArgumentException you can catch is thrown. It will have a message you can send to the user.
 
 The `@Default` annotation makes the argument be optional, so if it is not provided it will use the value described in the annotation.
@@ -70,6 +71,9 @@ CommandAPI.register(MyCommands.class);
 
 (use these register methods at the start of your program, or any time you want to add them to the system)
 
+#### Dynamic commands
+Another way of creating commands is programmatically, using `CommandAPI.createCommand(String name)`.
+
 ### Executing commands
 Let's say you received a command input string from the user and you want to execute it using the API. All you gotta do is:
 ```java
@@ -82,7 +86,7 @@ try {
 }
 ```
 
-`parse(Sender sender,String input)` returns a `ParseResults`, containing a mapping for all parsed data from the input - the command used and the arguments.
+`CommandAPI.parse(Sender sender, String input)` returns a `ParseResults`, containing a mapping for all parsed data from the input - the command used and the arguments.
 
 `ParseResults.execute()` invokes the method associated with the command with all arguments, and returns a `CommandResult` object.
 
@@ -158,6 +162,52 @@ The `Argument` is the object indicating the argument in the command. You can get
 
 The `CommandContext` contains all information about the command parsing and execution process - The command used, the alias used, the Sender and the original input.
 
-
 `reader.readWord()` reads and returns the string until the first space. The cursor is moved to the end of that string.
+
+
+To register an `ArgumentAdapter`, just use
+```java
+CommandAPI.registerArgumentAdapter(new MyAdapter());
+```
+
+
+### AnnotationAdapter
+
+Annotation adapters are used to make annotations to parameters alter the way the argument is processed. They can change the value, validate the input, add properties to the argument for the command documentation, etc.
+
+For example, the `@Default` annotation applies a default value to any primitive-type argument:
+```java
+// inside the @Default class
+class Adapter implements AnnotationAdapter<Default> {
+
+    @Override
+    public Class<Default> getAnnotationType() {
+        return Default.class;
+    }
+
+    @Override
+    public Object process(Object value, Default annotation, ParameterArgument arg, CommandContext ctx) throws InvalidArgumentException {
+        if (value == null) {
+            return useDefault(annotation,arg.getType());
+        }
+        return value;
+    }
+}
+```
+
+In the above example, an `AnnotationAdapter<Default>` is implemented. We provide the annotation class in `getAnnotationType`, and implement the processing of an argument in **execution time**.
+
+The `process(Object,Annotation,ParameterArgument,CommandContext)` method is called right after the value is parsed from the input, or, in case this wasn't part of the syntax, after an `outOfSyntax` value is resolved. 
+
+(`ParameterArgument` is an argument that has annotations, representing a method parameter).
+
+Annotation adapters can influence the registration process too. The `init(ParameterArgument,Annotation)` is called on an argument when the command is registered via `CommandAPI.register(Class/Object)`. It can be used to apply initial modifications to the argument, such as a different name, description, `required` state, incompatible annotations, etc.
+
+## Custom and Multiple Command Systems
+
+If you, for some reason, need more than one command system, with distinct command and adapters, or override our awesome default system, you can use the `CommandManager` class.
+
+This class is the common handler of almost all components in the API. The `CommandAPI` class we demonstrated thus far, delegates to a default `CommandManager` instance, with all of the default implementation.
+
+You can construct your own CommandManager for every command system you need, and you can extend this class and override any method you need (all methods are protected or public).
 

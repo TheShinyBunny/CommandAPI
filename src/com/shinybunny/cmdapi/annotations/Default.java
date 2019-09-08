@@ -1,7 +1,9 @@
 package com.shinybunny.cmdapi.annotations;
 
+import com.shinybunny.cmdapi.CommandAPI;
 import com.shinybunny.cmdapi.CommandContext;
-import com.shinybunny.cmdapi.arguments.Argument;
+import com.shinybunny.cmdapi.arguments.ParameterArgument;
+import com.shinybunny.cmdapi.exceptions.IncompatibleAnnotationException;
 import com.shinybunny.cmdapi.exceptions.InvalidArgumentException;
 
 import java.lang.annotation.ElementType;
@@ -27,18 +29,22 @@ public @interface Default {
         }
 
         @Override
-        public Object process(Object value, Default annotation, Argument arg, CommandContext ctx) throws InvalidArgumentException {
+        public Object process(Object value, Default annotation, ParameterArgument arg, CommandContext ctx) throws InvalidArgumentException {
             if (value == null) {
-                return useDefault(annotation,arg.getType());
+                Object o = useDefault(annotation,arg.getType());
+                System.out.println("used default: " + o);
+                return o;
             }
             return value;
         }
 
         public static Object useDefault(Default annotation, Class<?> type) {
+            System.out.println("class type : " + type);
             if (type == String.class) {
                 return annotation.value();
             } else if (Number.class.isAssignableFrom(type)) {
                 if (Integer.class == type) {
+                    System.out.println("int");
                     return (int)annotation.number();
                 } else if (Float.class == type) {
                     return (float)annotation.number();
@@ -49,7 +55,7 @@ public @interface Default {
                 } else {
                     return Byte.class == type ? (byte)annotation.number() : annotation.number();
                 }
-            } else if (type == Boolean.TYPE) {
+            } else if (type == Boolean.class) {
                 return annotation.bool();
             } else {
                 if (type.isEnum()) {
@@ -64,6 +70,12 @@ public @interface Default {
 
                 return null;
             }
+        }
+
+        @Override
+        public void init(ParameterArgument argument, Default aDefault) throws IncompatibleAnnotationException {
+            System.out.println("applied @Default to " + argument);
+            System.out.println("default = " + aDefault.value() + "/" + aDefault.number() + "/" + aDefault.bool());
         }
     }
 

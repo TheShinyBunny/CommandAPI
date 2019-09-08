@@ -4,7 +4,7 @@ import com.shinybunny.cmdapi.Sender;
 import com.shinybunny.cmdapi.annotations.Arg;
 import com.shinybunny.cmdapi.annotations.Default;
 import com.shinybunny.cmdapi.annotations.Range;
-import com.shinybunny.cmdapi.annotations.Settings;
+import com.shinybunny.cmdapi.annotations.Command;
 import com.shinybunny.cmdapi.utils.CommandResult;
 
 import java.util.Random;
@@ -30,7 +30,7 @@ public class Commands {
         }
     }
 
-    @Settings(name = "coins")
+    @Command(name = "coins")
     public static class CoinsCommand {
 
         public void add(Sender sender,

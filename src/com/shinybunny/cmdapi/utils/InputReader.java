@@ -104,4 +104,8 @@ public class InputReader {
     public String rest() {
         return select(cursor,string.length());
     }
+
+    public void setCursor(int cursor) {
+        this.cursor = cursor;
+    }
 }

@@ -1,7 +1,8 @@
 package com.shinybunny.cmdapi.annotations;
 
 import com.shinybunny.cmdapi.CommandContext;
-import com.shinybunny.cmdapi.arguments.Argument;
+import com.shinybunny.cmdapi.arguments.ParameterArgument;
+import com.shinybunny.cmdapi.exceptions.IncompatibleAnnotationException;
 import com.shinybunny.cmdapi.exceptions.InvalidArgumentException;
 
 import java.lang.annotation.ElementType;
@@ -21,14 +22,17 @@ public @interface Optional {
         }
 
         @Override
-        public Object process(Object value, Optional annotation, Argument arg, CommandContext ctx) throws InvalidArgumentException {
+        public Object process(Object value, Optional annotation, ParameterArgument arg, CommandContext ctx) throws InvalidArgumentException {
             return null;
         }
 
         @Override
-        public void init(Argument argument, Optional optional) throws Exception {
+        public void init(ParameterArgument argument, Optional optional) throws IncompatibleAnnotationException {
+            argument.incompatibleAnnotations(Optional.class,Default.class);
             argument.setRequired(false);
         }
+
+
     }
 
 }

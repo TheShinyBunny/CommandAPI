@@ -2,7 +2,6 @@ package com.shinybunny.cmdapi.arguments;
 
 import com.shinybunny.cmdapi.CommandContext;
 import com.shinybunny.cmdapi.Sender;
-import com.shinybunny.cmdapi.Suggestions;
 import com.shinybunny.cmdapi.utils.InputReader;
 
 public class SenderAdapter implements ArgumentAdapter<Sender> {

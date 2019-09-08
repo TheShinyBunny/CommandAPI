@@ -17,9 +17,9 @@ public interface ArgumentAdapter<T> {
     Class<T> getType();
 
     /**
-     * Parse the input passed from the user to get, create, resolve or find the value of the responsive type.
+     * Parse the input passed from the user to resolve the value for the argument.
      * @param reader The input reader that is passed through the whole command string to read through the arguments.
-     *               After every call to this method, the input reader {@linkplain InputReader#skipSpace() skips all spaces} for the next argument.
+     *               After every call to this method, the input reader {@linkplain InputReader#skipSpace() skips any spaces} before the next argument.
      * @param arg The argument using this adapter.
      * @param ctx The current command execution context.
      * @return The value to pass to the command's method.
@@ -40,7 +40,7 @@ public interface ArgumentAdapter<T> {
     }
 
     /**
-     * @return Get the default value for this adapter. Useful for primitive types and any type that has a default type.
+     * @return Get the default value for this adapter. Useful for primitive types.
      */
     default T getDefault() {
         return null;

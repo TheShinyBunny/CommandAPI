@@ -2,16 +2,12 @@ package com.shinybunny.cmdapi.arguments;
 
 import com.shinybunny.cmdapi.CommandAPI;
 import com.shinybunny.cmdapi.CommandContext;
-import com.shinybunny.cmdapi.annotations.AnnotationAdapter;
+import com.shinybunny.cmdapi.CommandManager;
+import com.shinybunny.cmdapi.annotations.Arg;
 import com.shinybunny.cmdapi.exceptions.CommandParseException;
-import com.shinybunny.cmdapi.exceptions.IncompatibleAnnotationException;
 import com.shinybunny.cmdapi.exceptions.NoAdapterFoundException;
 import com.shinybunny.cmdapi.utils.InputReader;
 import com.shinybunny.cmdapi.exceptions.InvalidArgumentException;
-
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Represents an argument of a command. An argument is created for each parameter of a method.<br/>
@@ -19,59 +15,55 @@ import java.util.Map;
  */
 public class Argument {
 
+    protected CommandManager manager;
     private String name;
-    /**
-     * The type of data the argument accepts - the type of its respective parameter.
-     */
     private Class<?> type;
     private String description;
-    private Map<Annotation,AnnotationAdapter> annotations;
     private ArgumentAdapter<?> adapter;
-    private boolean required = true;
+    protected boolean required = true;
     private Object defaultValue;
-    private boolean syntax = true;
+    protected boolean syntax = true;
 
-    public Argument(String name, Class<?> type, Annotation[] annotations, ArgumentAdapter<?> argumentAdapter) throws NoAdapterFoundException, IncompatibleAnnotationException {
+
+    public Argument(CommandManager manager, String name, Class<?> type, ArgumentAdapter<?> argumentAdapter) throws NoAdapterFoundException {
+        this.manager = manager;
         this.name = name;
         if (argumentAdapter == null) {
             throw new NoAdapterFoundException("No argument adapter found for type " + type,type);
         }
         this.adapter = argumentAdapter;
         this.type = type;
-        this.annotations = new HashMap<>();
         this.defaultValue = adapter.getDefault();
-        this.addAnnotationAdapters(annotations);
+
     }
 
-    private void addAnnotationAdapters(Annotation[] annotations) throws IncompatibleAnnotationException, NoAdapterFoundException {
-        for (Annotation a : annotations) {
-            AnnotationAdapter adapter = CommandAPI.getAnnotationAdapter(a.annotationType());
-            if (adapter != null) {
-                // there is an adapter for that annotation!
-                this.annotations.put(a, adapter);
-                if (!adapter.isRequired(a)) {
-                    // mark this argument as not required only if one annotation adapter says so.
-                    this.required = false;
-                }
-                if (!adapter.isSyntax()) {
-                    this.syntax = false;
-                }
-                // call the init() method of the adapter, to modify this argument according to the annotation.
-                adapter.init(this, a);
-            } else {
-                throw new NoAdapterFoundException("No adapter found for annotation " + a.annotationType(),a.annotationType());
-            }
-        }
+    public Argument(String name, Class<?> type) throws NoAdapterFoundException {
+        this(CommandAPI.DEFAULT,name,type,CommandAPI.DEFAULT.getArgumentAdapter(type));
     }
 
+    /**
+     * The argument name.
+     * If the compiler doesn't save parameter names, this will probably be arg0, arg1, etc. by default.
+     * Use the {@link Arg} annotation to use a hardcoded name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * The type of data the argument accepts - the type of its respective parameter.
+     */
     public Class<?> getType() {
         return type;
     }
 
+    /**
+     * Parses this argument using its {@link ArgumentAdapter}.
+     * @param reader The input reader to pass to the {@link ArgumentAdapter#parse(InputReader, Argument, CommandContext)} method
+     * @param ctx The parsing context
+     * @return The value to pass to the method
+     * @throws CommandParseException If any parsing errors occurred.
+     */
     public Object parse(InputReader reader, CommandContext ctx) throws CommandParseException {
         return adapter.parse(reader,this,ctx);
     }
@@ -81,12 +73,6 @@ public class Argument {
     }
 
     public Object process(Object value, CommandContext ctx) throws InvalidArgumentException {
-        for (Map.Entry<Annotation,AnnotationAdapter> a : annotations.entrySet()) {
-            Object v = a.getValue().process(value,a.getKey(),this,ctx);
-            if (v != null) {
-                value = v;
-            }
-        }
         return value;
     }
 
@@ -102,6 +88,9 @@ public class Argument {
         return defaultValue;
     }
 
+    /**
+     * Whether this argument accepts <code>null</code> values, as defined by {@link ArgumentAdapter#nullable()}.
+     */
     public boolean isNullable() {
         return adapter.nullable();
     }
@@ -110,23 +99,34 @@ public class Argument {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public ArgumentAdapter<?> getAdapter() {
+        return adapter;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Argument && ((Argument) obj).name.equals(name) && ((Argument) obj).type == type;
+    }
+
     public void setDescription(String description) {
         this.description = description;
     }
 
     @Override
     public String toString() {
-        return name + " (" + type.getSimpleName().toLowerCase() + ")";
+        return name + " (" + type.getSimpleName() + ")";
     }
 
-    public boolean hasAnnotation(Class<? extends Annotation> annotationType) {
-        for (Annotation a : annotations.keySet()) {
-            if (a.annotationType() == annotationType) return true;
-        }
-        return false;
-    }
-
+    /**
+     * Whether this argument is a part of the command's syntax, and should be parsed from the input.<br/>
+     * For example, a {@link com.shinybunny.cmdapi.Sender} argument is not part of the syntax, as it's the source of the command.
+     */
     public boolean isSyntax() {
         return syntax;
     }
+
 }

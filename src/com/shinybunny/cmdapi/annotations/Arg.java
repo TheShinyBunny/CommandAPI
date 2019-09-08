@@ -1,7 +1,7 @@
 package com.shinybunny.cmdapi.annotations;
 
 import com.shinybunny.cmdapi.CommandContext;
-import com.shinybunny.cmdapi.arguments.Argument;
+import com.shinybunny.cmdapi.arguments.ParameterArgument;
 import com.shinybunny.cmdapi.exceptions.InvalidArgumentException;
 
 import java.lang.annotation.ElementType;
@@ -25,12 +25,12 @@ public @interface Arg {
         }
 
         @Override
-        public Object process(Object value, Arg annotation, Argument arg, CommandContext ctx) throws InvalidArgumentException {
+        public Object process(Object value, Arg annotation, ParameterArgument arg, CommandContext ctx) throws InvalidArgumentException {
             return null;
         }
 
         @Override
-        public void init(Argument argument, Arg arg) {
+        public void init(ParameterArgument argument, Arg arg) {
             argument.setName(arg.value());
             argument.setDescription(arg.desc());
         }

@@ -7,31 +7,37 @@ import java.lang.annotation.Annotation;
 
 public class IncompatibleAnnotationException extends Exception {
 
-    private Annotation annotation;
-    private AnnotationAdapter adapter;
-    private Argument argument;
+
+    private final Class<? extends Annotation> first;
+    private final Class<? extends Annotation> second;
+    private final Argument argument;
 
     /**
      * Constructs a new exception with the specified detail message.  The
      * cause is not initialized, and may subsequently be initialized by
      * a call to {@link #initCause}.
-     *
-     * @param message the detail message. The detail message is saved for
+     *  @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
+     * @param first
+     * @param second
      * @param argument
      */
-    public IncompatibleAnnotationException(String message, Annotation annotation, AnnotationAdapter adapter, Argument argument) {
+    public IncompatibleAnnotationException(String message, Class<? extends Annotation> first, Class<? extends Annotation> second, Argument argument) {
         super(message);
-        this.annotation = annotation;
-        this.adapter = adapter;
+        this.first = first;
+        this.second = second;
         this.argument = argument;
     }
 
-    public Annotation getAnnotation() {
-        return annotation;
+    public Class<? extends Annotation> getFirst() {
+        return first;
     }
 
-    public AnnotationAdapter getAdapter() {
-        return adapter;
+    public Class<? extends Annotation> getSecond() {
+        return second;
+    }
+
+    public Argument getArgument() {
+        return argument;
     }
 }

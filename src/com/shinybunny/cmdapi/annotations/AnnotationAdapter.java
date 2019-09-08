@@ -2,6 +2,7 @@ package com.shinybunny.cmdapi.annotations;
 
 import com.shinybunny.cmdapi.CommandContext;
 import com.shinybunny.cmdapi.arguments.Argument;
+import com.shinybunny.cmdapi.arguments.ParameterArgument;
 import com.shinybunny.cmdapi.exceptions.IncompatibleAnnotationException;
 import com.shinybunny.cmdapi.exceptions.InvalidArgumentException;
 import com.shinybunny.cmdapi.exceptions.NoAdapterFoundException;
@@ -18,9 +19,10 @@ import java.lang.annotation.Annotation;
  *     <li>The adapter is mapped to the {@link Annotation} instance for the argument</li>
  *     <li>If the result of {@link #isRequired(Annotation)} is false, the argument becomes not required</li>
  *     <li>If the result of {@link #isSyntax()} is false, the argument becomes not part of the command syntax</li>
- *     <li>Finally, {@link #init(Argument, Annotation)} is called, potentially throwing a {@link IncompatibleAnnotationException} in case the annotation is not compatible with the parameter type it's bound to</li>
+ *     <li>Finally, {@link #init(ParameterArgument, Annotation)} is called, potentially throwing an {@link IncompatibleAnnotationException}
+ *     in case the annotation is not compatible with the parameter type it's bound to, or another annotation in that argument.</li>
  * </ol>
- * @param <A>
+ * @param <A> the annotation type
  */
 public interface AnnotationAdapter<A extends Annotation> {
 
@@ -37,8 +39,8 @@ public interface AnnotationAdapter<A extends Annotation> {
             }
 
             @Override
-            public Object process(Object value, A annotation, Argument arg, CommandContext ctx) throws InvalidArgumentException {
-                return null;
+            public Object process(Object value, A annotation, ParameterArgument arg, CommandContext ctx) throws InvalidArgumentException {
+                return value;
             }
         };
     }
@@ -59,15 +61,15 @@ public interface AnnotationAdapter<A extends Annotation> {
 
     /**
      * Processes the argument value while parsing a command execution. Called with <code>value = null</code> if no value is resolved yet.
-     * It's also called if either this adapter or other annotation adapter for the argument returned <code>false</code> in {@link #isSyntax()}.
+     * It's also called if either this adapter or other annotation adapter for the argument {@link #isSyntax() is not part of the syntax}.
      * @param value The currently parsed or resolved value to pass to the command's method.
      * @param annotation An instance of this adapter's annotation for the parameter
      * @param arg The argument this adapter is used to process
      * @param ctx The current command execution context
-     * @return A new value to change the used value, null or the passed <code>value</code> to make no changes to the parsed value.
+     * @return A new value to change the used value, or either null/the passed <code>value</code>, to make no changes.
      * @throws InvalidArgumentException If this annotation's purpose suggests the parsed value is invalid (not in range, too short, to long, in an invalid state, etc.
      */
-    Object process(Object value, A annotation, Argument arg, CommandContext ctx) throws InvalidArgumentException;
+    Object process(Object value, A annotation, ParameterArgument arg, CommandContext ctx) throws InvalidArgumentException;
 
     default boolean isRequired(A a) {
         return true;
@@ -77,9 +79,10 @@ public interface AnnotationAdapter<A extends Annotation> {
      * Called when a command is registered with a parameter annotated with this adapter's type, to modify the argument settings or to invalidate the use of this annotation.
      * @param argument The argument using this adapter
      * @param a The annotation instance attached to the method's parameter
-     * @throws IncompatibleAnnotationException to invalidate the use of this annotation for that argument type
+     * @throws IncompatibleAnnotationException to invalidate the use of this annotation for that argument
      */
-    default void init(Argument argument, A a) throws IncompatibleAnnotationException {
+    default void init(ParameterArgument argument, A a) throws IncompatibleAnnotationException {
 
     }
+
 }

@@ -1,7 +1,6 @@
 package com.shinybunny.cmdapi.arguments;
 
 import com.shinybunny.cmdapi.CommandContext;
-import com.shinybunny.cmdapi.Suggestions;
 import com.shinybunny.cmdapi.exceptions.CommandParseException;
 import com.shinybunny.cmdapi.utils.InputReader;
 
